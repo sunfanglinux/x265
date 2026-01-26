@@ -24,9 +24,24 @@
 #include "filter-prim.h"
 #include <stdint.h>
 
+extern "C" {
+#include "fun-decls.h"
+}
+
 namespace X265_NS
 {
 #if !HIGH_BIT_DEPTH
+
+int get_vlenb()
+{
+    int len;
+    asm volatile(
+                    "csrr %[len], vlenb \n\t"
+                    : [len]"=&r"(len)
+                    :
+                    : "memory");
+    return len;
+}
 
 template<int coeffIdx, int width, int height>
 void interp8_horiz_pp_rvv(const pixel *src, intptr_t srcStride, pixel *dst,
@@ -1176,6 +1191,9 @@ void interp_hv_pp_rvv(const pixel *src, intptr_t srcStride, pixel *dst,
     p.pu[LUMA_ ## W ## x ## H].luma_vss     = interp_vert_ss_rvv<8, W, H>; \
     p.pu[LUMA_ ## W ## x ## H].luma_hvpp    = interp_hv_pp_rvv<8, W, H>;
 
+#define LUMA_V256(W, H) \
+    p.pu[LUMA_ ## W ## x ## H].luma_hvpp    = PFX(interp_hv_pp_8_## W ## x ## H ##_v256_rvv);
+
 void setupFilterPrimitives_rvv(EncoderPrimitives &p)
 {
     LUMA(4, 4);
@@ -1203,6 +1221,34 @@ void setupFilterPrimitives_rvv(EncoderPrimitives &p)
     LUMA(64, 32);
     LUMA(64, 48);
     LUMA(64, 64);
+
+    if(get_vlenb() >= 32) {
+        LUMA_V256(4, 4);
+        LUMA_V256(4, 8);
+        LUMA_V256(4, 16);
+        LUMA_V256(12, 16);
+        LUMA_V256(8, 4);
+        LUMA_V256(8, 8);
+        LUMA_V256(8, 16);
+        LUMA_V256(8, 32);
+        LUMA_V256(16, 4);
+        LUMA_V256(16, 8);
+        LUMA_V256(16, 12);
+        LUMA_V256(16, 16);
+        LUMA_V256(16, 32);
+        LUMA_V256(16, 64);
+        LUMA_V256(24, 32);
+        LUMA_V256(32, 8);
+        LUMA_V256(32, 16);
+        LUMA_V256(32, 24);
+        LUMA_V256(32, 32);
+        LUMA_V256(32, 64);
+        LUMA_V256(48, 64);
+        LUMA_V256(64, 16);
+        LUMA_V256(64, 32);
+        LUMA_V256(64, 48);
+        LUMA_V256(64, 64);
+    }
 
     CHROMA_420(4, 2);
     CHROMA_420(4, 4);

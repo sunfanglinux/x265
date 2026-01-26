@@ -142,6 +142,7 @@ FUNCDEF_PU(void, blockcopy_sp, v, pixel* a, intptr_t stridea, const int16_t* b, 
 FUNCDEF_PU(void, blockcopy_ps, v, int16_t* a, intptr_t stridea, const pixel* b, intptr_t strideb);
 FUNCDEF_PU(uint64_t, pixel_var, v, const pixel* pix, intptr_t stride);
 FUNCDEF_PU(int, sa8d, rvv, const pixel* pix1, intptr_t i_pix1, const pixel* pix2, intptr_t i_pix2);
+FUNCDEF_PU(void, interp_hv_pp_8, v256_rvv, const pixel* src, intptr_t srcStride, pixel* dst, intptr_t dstStride, int idxX, int idxY);
 
 FUNCDEF_CHROMA_PU(int, satd4, rvv, const pixel *pix1, intptr_t stride_pix1, const pixel *pix2, intptr_t stride_pix2);
 FUNCDEF_CHROMA_PU(int, satd8, rvv, const pixel *pix1, intptr_t stride_pix1, const pixel *pix2, intptr_t stride_pix2);
